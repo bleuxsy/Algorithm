@@ -11,8 +11,8 @@ for d in data:
 	
 	if d ==">":
 		check = False
-		for i in range(len(stack))):
-			ans += stack.pop(0))
+		for i in range(len(stack)):
+			ans += stack.pop(0)
 	if d ==' ' and check == False: 
 		for j in range(len(stack)):
 			if j == 0:

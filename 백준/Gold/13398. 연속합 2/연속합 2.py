@@ -1,6 +1,6 @@
 n = int(input())
 arr = list(map(int, input().split()))
-dp = [[0] * n for i in range(2)] # dp[1][0] = 0 
+dp = [[0] * n for i in range(2)] # dp2.py[1][0] = 0
 dp[0][0] = arr[0]
 answer = arr[0]
 for i in range(1, n):

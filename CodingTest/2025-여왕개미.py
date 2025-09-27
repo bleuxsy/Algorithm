@@ -57,22 +57,23 @@ def go_ant():
 
 
 ####################
-Q = int(input())
-time = deque()
-house = [0]
-for i in range(Q):
+if __name__ == "__main__":
+    Q = int(input())
+    time = deque()
+    house = [0]
+    for i in range(Q):
 
-    p, q, r = 0, 0, 0
-    cmd = list(map(int, input().split()))
-    if cmd[0] == 100:
-        house = make_town(house, cmd[2:])
-    elif cmd[0] == 200:
-        p = cmd[1]
-        house = make_house(house, p)
-    elif cmd[0] == 300:
-        q = cmd[1]
-        house = del_house(house, q)
+        p, q, r = 0, 0, 0
+        cmd = list(map(int, input().split()))
+        if cmd[0] == 100:
+            house = make_town(house, cmd[2:])
+        elif cmd[0] == 200:
+            p = cmd[1]
+            house = make_house(house, p)
+        elif cmd[0] == 300:
+            q = cmd[1]
+            house = del_house(house, q)
 
-    else:
-        r = cmd[1]
-        go_ant()
+        else:
+            r = cmd[1]
+            go_ant()

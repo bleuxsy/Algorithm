@@ -1,4 +1,6 @@
 from collections import deque
+import sys
+sys.stdin = open("input.txt", "r")
 def sort_word():
     for i in range(len(flist)):
         for j in range(len(flist)):
@@ -90,22 +92,7 @@ def owner(glist):
         olist.append([blist[r][c], r,c])
         print(olist)
 
-    #     print(olist)
-    #     i = lst[0]
-    #     j = lst[1]
-    #     print(i , j)
-    #     print("여기 !")
-    #     if olist[idx][1] == i and olist[idx][2] == j:
-    #         olist[idx][0] += len(lst) -3
-    #         blist[i][j] += len(lst)-3
-    #         print("여기 !!")
-    #
-    #     else:
-    #         blist[i][j] -= 1
-    #     idx += 1
-    #
-    # print(olist)
-    # print(f"{blist} 적용 후 ")
+
     olist = del_num()
 
 
@@ -160,6 +147,7 @@ def overdose(o):
                     if y < x:
                         print("강한 전파")
                         flist[nx][ny] = flist[ssx][ssy]
+
                         x -= (y+1)
                         blist[nx][ny] += 1
                         for f in flist:
@@ -227,31 +215,32 @@ def solution():
             else:
                 res[6] += blist[i][j]
     return res
-N , T = map(int, input().split())
-flist = [list( input()) for _ in range(N)]
+if __name__ == "__main__":
+    N , T = map(int, input().split())
+    flist = [list( input()) for _ in range(N)]
 
-for F in flist:
-    print(F)
+    for F in flist:
+        print(F)
 
-blist = [list(map(int, input().split())) for _ in range(N)]
-for b in blist:
-    print(b)
+    blist = [list(map(int, input().split())) for _ in range(N)]
+    for b in blist:
+        print(b)
 
 
-for i in range(2):
-    # 1. 아침
-    sort_word()
-    morning()
-    for row in blist:
-        print(row)
-    for row in flist:
-        print(row)
-    # 2. 점심
-    ownerlist = lunch()
-    # 3. 저녁
+    for i in range(2):
+        # 1. 아침
+        sort_word()
+        morning()
+        for row in blist:
+            print(row)
+        for row in flist:
+            print(row)
+        # 2. 점심
+        ownerlist = lunch()
+        # 3. 저녁
 
-    evening(ownerlist)
+        evening(ownerlist)
 
-    print(f"#{i+1} {solution()}")
-    print("------------next---------------")
-    #print(f"#{i} {result}")
+        print(f"#{i+1} {solution()}")
+        print("------------next---------------")
+        #print(f"#{i} {result}")

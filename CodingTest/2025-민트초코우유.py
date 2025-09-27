@@ -1,6 +1,16 @@
 from collections import deque
-def morning():
+def sort_word():
+    for i in range(len(flist)):
+        for j in range(len(flist)):
+            word = flist[i][j]
+            sw = "".join(sorted(word, reverse = True))
+            flist[i][j] = sw
 
+
+
+
+def morning():
+    print("아침")
     for i in range(len(blist)):
         for j in range(len(blist)):
             blist[i][j] += 1
@@ -37,7 +47,7 @@ def group():
         for sj in range(N):
             if not v[si][sj]:
                 mlist =bfs_group(v , si, sj)
-                print(mlist)
+
                 glist.append(mlist)
 
     return glist
@@ -106,7 +116,7 @@ def overdose(o):
     v = [[False] * N for _ in range(N)]
     mov = 0
     d = [[-1, 0] , [1, 0] , [0 , -1], [0 , 1]]
-    print(f"overdose 안입니다 {o}")
+
     for i in o:
         mov = i[0] % 4
         stack = deque()
@@ -115,16 +125,22 @@ def overdose(o):
         x = i[0] - 1
         ssx = i[1]
         ssy = i[2]
+        print("=======")
+        print(f"대표 {ssx} {ssy}")
+        if v[ssx][ssy]:
+            print("break!")
+            break
         stack.append([ssx, ssy])
         while stack:
             sx , sy = stack.pop()
             print(f"시작점 {sx} {sy}")
-            if v[sx][sy] :
-                print("break!")
-                break
+            # if v[sx][sy] :
+            #     print("break!")
+            #     break
             nx = sx + d[mov][0]
             ny = sy + d[mov][1]
-            print("============================")
+            print("다음 좌표")
+            print(nx, ny)
             if 0<= nx < N and 0 <= ny < N and x > 0:
 
                 if flist[nx][ny] == flist[ssx][ssy]:
@@ -135,6 +151,7 @@ def overdose(o):
                     print(f"다음 {stack}")
                 else:
                     v[nx][ny] = True
+
                     #신봉 음식이 다른 경우에는 전파가 진행이 됨
                     print(f"전파 시작 {nx} {ny}")
                     y = blist[nx][ny]
@@ -149,7 +166,7 @@ def overdose(o):
                             print(f)
                         for b in blist:
                             print(b)
-                        stack.append([nx,ny ])
+                        stack.append([nx,ny])
                         print(stack)
                         if x == 0:
                             break
@@ -166,7 +183,9 @@ def overdose(o):
 
                         x = 0
                         break
+    print("==============")
     return
+
 def lunch():
 
     glist = group()
@@ -186,6 +205,28 @@ def evening(o):
     for b in blist:
         print(b)
 
+def solution():
+    res = [0] *7
+
+    sort_word()
+
+    for i in range(len(flist)):
+        for j in range(len(flist)):
+            if len(flist[i][j]) == 3 :
+                res[0] += blist[i][j]
+            elif  flist[i][j] == "TC":
+                res[1] += blist[i][j]
+            elif  flist[i][j] == "TM":
+                res[2] += blist[i][j]
+            elif flist[i][j] == "MC" :
+                res[3] += blist[i][j]
+            elif flist[i][j] == "M":
+                res[4] += blist[i][j]
+            elif flist[i][j] == "C":
+                res[5] += blist[i][j]
+            else:
+                res[6] += blist[i][j]
+    return res
 N , T = map(int, input().split())
 flist = [list( input()) for _ in range(N)]
 
@@ -197,16 +238,20 @@ for b in blist:
     print(b)
 
 
-for i in range(1):
+for i in range(2):
     # 1. 아침
+    sort_word()
     morning()
-    # for row in blist:
-    #     print(row)
-
+    for row in blist:
+        print(row)
+    for row in flist:
+        print(row)
     # 2. 점심
     ownerlist = lunch()
     # 3. 저녁
 
     evening(ownerlist)
 
+    print(f"#{i+1} {solution()}")
+    print("------------next---------------")
     #print(f"#{i} {result}")

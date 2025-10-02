@@ -1,9 +1,9 @@
 def solution(id_list, report, k):
     answer = []
     suspends = []
-    dic= {}
+    dic = {}
     ids = [0] * len(id_list)
-    check =[False] * len(id_list)
+    check = [False] * len(id_list)
     result = [0] * len(id_list)
     for i in report:
         a, b = i.split(" ")
@@ -21,5 +21,5 @@ def solution(id_list, report, k):
         for user in users:
             if check[id_list.index(user)]:
                 result[id_list.index(key)] += 1
-    
+
     return result

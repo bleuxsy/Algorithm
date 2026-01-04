@@ -4,6 +4,7 @@ sys.stdin = open("inx.txt", "r")
 def bfs(s):
     q = []
     q.append(s)
+    #큐 사용
 
     ans.append(s)
     visited[s] = 1

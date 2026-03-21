@@ -22,6 +22,7 @@ grid = [
 graph = [[] for _ in range(50*50*5+5)]
 drs, dcs = [[1, -1, 0, 0], [0, 0, 1, -1]]
 
+
 def in_range(r, c):
     return 0<= r< N and 0<= c < N
 def state_to_number(r, c, jump):

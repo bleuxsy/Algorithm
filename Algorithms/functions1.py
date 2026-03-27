@@ -1,73 +1,62 @@
 import heapq
+
 INF = 10**18
-n, m, X = map(int, input().split())
-edges = [tuple(map(int, input().split())) for _ in range(m)]
 
-# Please write your code here.
-visited = [False] * (n+1)
+def dijkstra(double_u=-1, double_v=-1):
+    dist = [INF] * (n + 1)
+    parent = [-1] * (n + 1)
+    pq = []
 
-grid = [[] for _ in range(n+1)]
-back_grid = [[] for _ in range(n+1)]
-for x,y,w in edges:
-    grid[x].append((y,w))
+    dist[1] = 0
+    heapq.heappush(pq, (0, 1))
 
-for x,y, w in edges:
-    back_grid[y].append((x,w))
+    while pq:
+        cur_dist, x = heapq.heappop(pq)
 
-print(grid)
-print(back_grid)
+        if dist[x] < cur_dist:
+            continue
 
-# [[], [(2, 4), (3, 2), (4, 7)], [(1, 1), (3, 5)], [(1, 2), (4, 4)], [(2, 3)]]
-pq = []
-D = [INF] * (n+1)
-"""
-    D : X 정점에서 다른 정점까지의 최단 거리  ( X -> ??)
-    B : 다른 정점에서 X까지의 최단 거리 (X에서 다른 정점까지의 거리) ( ?? -> X)
-    
+        for nx, w in graph[x]:
+            cost = w
 
-"""
-heapq.heappush(pq, (0, X))
-D[X] = 0
+            # 이번에 2배로 늘릴 간선이면 비용 2배
+            if (x == double_u and nx == double_v) or (x == double_v and nx == double_u):
+                cost = w * 2
+
+            nd = cur_dist + cost
+            if dist[nx] > nd:
+                dist[nx] = nd
+                parent[nx] = x
+                heapq.heappush(pq, (nd, nx))
+
+    return dist, parent
 
 
+n, m = map(int, input().split())
+graph = [[] for _ in range(n + 1)]
 
+for _ in range(m):
+    a, b, w = map(int, input().split())
+    graph[a].append((b, w))
+    graph[b].append((a, w))
 
-while pq :
-    w , sx = heapq.heappop(pq)
+# 원래 최단거리 + parent 구하기
+dist, parent = dijkstra()
+original = dist[n]
 
-    if visited[sx]:
-        continue
-    visited[sx] = True
+# path 배열에 원래 최단경로의 간선 저장
+path = []
+cur = n
+while cur != 1:
+    prev = parent[cur]
+    path.append((prev, cur))
+    cur = prev
 
-    for nx , nw in grid[sx]:
-        if D[nx] > D[sx] + nw:
-            D[nx] = D[sx] + nw
-            heapq.heappush(pq, (D[nx], nx))
+answer = original
 
-pp = []
-print(D)
-visited = [False] * (n+1)
-B = [INF] * (n+1)
-heapq.heappush(pp, (0, X))
+# path 위의 간선만 하나씩 2배로 바꿔서 다시 다익스트라
+for u, v in path:
+    new_dist, _ = dijkstra(u, v)
+    answer = max(answer, new_dist[n])
 
-B[X] = 0
-
-while pp:
-    w, sx = heapq.heappop(pp)
-
-    if visited[sx]:
-        continue
-    visited[sx] = True
-
-    for nx, nw in back_grid[sx]:
-        if B[nx] > B[sx] + nw:
-            B[nx] = B[sx] + nw
-            heapq.heappush(pp, (B[nx], nx))
-
-answer = 0
-print(B)
-for i in range(1, n+1):
-    if answer < D[i] + B[i]:
-        answer = D[i] + B[i]
-
-print(answer)
+print(answer - original)

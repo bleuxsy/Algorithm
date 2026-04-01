@@ -1,25 +1,16 @@
-import sys
-input = sys.stdin.readline
+import heapq
 
-N = int(input())
-arr = list(map(int, input().split()))
+def solution(scoville, K):
+    heapq.heapify(scoville)
+    answer = 0
 
-left = 0
-right = N - 1
+    while scoville and scoville[0] < K:
+        if len(scoville) < 2:
+            return -1
 
-best = float('inf')
-answer = (0, 0)
+        a = heapq.heappop(scoville)
+        b = heapq.heappop(scoville)
+        heapq.heappush(scoville, a + 2*b)
+        answer += 1
 
-while left < right:
-    s = arr[left] + arr[right]
-
-    if abs(s) < best:
-        best = abs(s)
-        answer = (arr[left], arr[right])
-
-    if s > 0:
-        right -= 1
-    else:
-        left += 1
-
-print(answer[0], answer[1])
+    return answer

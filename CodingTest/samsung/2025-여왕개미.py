@@ -1,79 +1,88 @@
-from collections import deque
+import sys
 
+sys.stdin = open("input.txt", "r")
 
 # [1] 마을 건설
-def make_town(house, dir):
-    house = house + dir
-    house.sort()
-
-    return house
+def make_town(lst):
+    house[0] = 0   # 여왕 개미 집
+    for i, x in enumerate(lst, start=1):
+        house[i] = x
 
 
 # [2] 개미집 건설
-def make_house(house, p):
-    house.append(p)
-
-    return house
+def make_house(nxt, p):
+    house[nxt] = p
 
 
 # [3] 개미집 철거
-def del_house(house, q):
-    # 이미 철거된 상태거나, 아직 지어지지 않은 경우는 입력으로 들어오지 않음.
-
+def del_house(q):
     house.pop(q)
 
-    return house
 
+def can(pos, r, T):
+    n = len(pos)
+    used = 0
+    i = 1
 
-def dfs(L, idx, total):
-    global res
+    while i < n:
+        used += 1
+        if used > r:
+            return False
 
-    if L == r - 1:
-        if idx < len(house) - 1:
-            total += house[-1] - house[idx]
+        start = pos[i]
+        limit = start + T
 
-        if res > total:
-            res = total
-            return
-    else:
-        for i in range(idx + 1, len(house)):
-            if i - idx == 0:
-                dfs(L + 1, i + 1, total)
-            else:
-                cnt = house[i] - house[idx]
-                if total < cnt:
-                    total = cnt
-                dfs(L + 1, i + 1, total)
+        j = i
+        while j < n and pos[j] <= limit:
+            j += 1
+
+        i = j
+
+    return True
 
 
 # [4] 개미집 정찰
-def go_ant():
-    global res
+def go_ant(r):
+    pos = sorted(house.values())
 
-    res = sum(house)
+    left, right = 0, pos[-1] - pos[0]
+    ans = right
 
-    dfs(0, 1, 0)
-    print(res)
+    while left <= right:
+        mid = (left + right) // 2
+
+        if can(pos, r, mid):
+            ans = mid
+            right = mid - 1
+        else:
+            left = mid + 1
+
+    print(ans)
 
 
 ####################
 if __name__ == "__main__":
     Q = int(input())
-    time = deque()
-    house = [0]
-    for i in range(Q):
+    house = {}
 
-        p, q, r = 0, 0, 0
+    nxt = 1
+    for _ in range(Q):
         cmd = list(map(int, input().split()))
+
         if cmd[0] == 100:
-            house = make_town(house, cmd[2:])
+            N = cmd[1]
+            make_town(cmd[2:])
+            nxt = N + 1
+
         elif cmd[0] == 200:
             p = cmd[1]
-            house = make_house(house, p)
+            make_house(nxt, p)
+            nxt += 1
+
         elif cmd[0] == 300:
             q = cmd[1]
-            house = del_house(house, q)
+            del_house(q)
 
-        else:
+        else:   # 400
             r = cmd[1]
-            go_ant()
+            go_ant(r)

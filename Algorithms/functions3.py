@@ -1,154 +1,259 @@
 import sys
+from collections import deque
+
 sys.stdin = open("input.txt", "r")
 
-exit_dir = [(-1, 0), (0, 1), (1, 0), (0, -1)]   # 북 동 남 서
+EAST, WEST, SOUTH, NORTH, TOP = 0, 1, 2, 3, 4
 
 
-def myprint(lst):
-    for l in lst:
-        print(*l)
-    print()
+def convert_exit(org_ex, org_ey, ed, cube_sx, cube_sy, M):
+    # org_ex, org_ey는 평면에서 시간의 벽(3) 칸 좌표
+    if ed == 3:   # 북쪽 출구
+        c_off = org_ey - cube_sy
+        return NORTH, M - 1, M - c_off - 1
+    elif ed == 2: # 남쪽 출구
+        c_off = org_ey - cube_sy
+        return SOUTH, M - 1, c_off
+    elif ed == 1: # 서쪽 출구
+        r_off = org_ex - cube_sx
+        return WEST, M - 1, r_off
+    else:         # 동쪽 출구
+        r_off = org_ex - cube_sx
+        return EAST, M - 1, M - r_off - 1
 
 
-def can_move(x, y, sd):
-    # sd: 0 남, 1 서회전후하강, 2 동회전후하강
+def move(face, r, c):
+    nxt = []
 
-    # 남쪽으로 한 칸
-    if sd == 0:
-        cells = [
-            (x + 1, y - 1),
-            (x + 2, y),
-            (x + 1, y + 1),
-        ]
+    dr = [-1, 1, 0, 0]
+    dc = [0, 0, -1, 1]
 
-    # 서쪽으로 회전 후 아래
-    elif sd == 1:
-        cells = [
-            (x - 1, y - 1),
-            (x,     y - 2),
-            (x + 1, y - 1),
-            (x + 1, y - 2),
-            (x + 2, y - 1),
-        ]
+    for i in range(4):
+        nr, nc = r + dr[i], c + dc[i]
+        if 0 <= nr < M and 0 <= nc < M:
+            nxt.append((face, nr, nc))
 
-    # 동쪽으로 회전 후 아래
-    else:
-        cells = [
-            (x - 1, y + 1),
-            (x,     y + 2),
-            (x + 1, y + 1),
-            (x + 1, y + 2),
-            (x + 2, y + 1),
-        ]
+    transitions = []
 
-    for nx, ny in cells:
-        if not (0 <= nx < R + 3 and 0 <= ny < C):
-            return False
-        if grid[nx][ny] != 0:
-            return False
+    if face == TOP:
+        if r == 0:
+            transitions.append((NORTH, 0, M - c - 1))
+        if r == M - 1:
+            transitions.append((SOUTH, 0, c))
+        if c == 0:
+            transitions.append((WEST, 0, r))
+        if c == M - 1:
+            transitions.append((EAST, 0, M - r - 1))
 
-    return True
+    elif face == NORTH:
+        if r == 0:
+            transitions.append((TOP, 0, M - c - 1))
+        if c == M - 1:
+            transitions.append((WEST, r, 0))
+        if c == 0:
+            transitions.append((EAST, r, M - 1))
 
+    elif face == SOUTH:
+        if r == 0:
+            transitions.append((TOP, M - 1, c))
+        if c == 0:
+            transitions.append((WEST, r, M - 1))
+        if c == M - 1:
+            transitions.append((EAST, r, 0))
 
-def move_golem(org_c, org_d):
-    global grid
+    elif face == WEST:
+        if r == 0:
+            transitions.append((TOP, c, 0))
+        if c == 0:
+            transitions.append((NORTH, r, M - 1))
+        if c == M - 1:
+            transitions.append((SOUTH, r, 0))
 
-    x = 1
-    y = org_c
-    exit_d = org_d
+    elif face == EAST:
+        if r == 0:
+            transitions.append((TOP, M - c - 1, M - 1))
+        if c == M - 1:
+            transitions.append((NORTH, r, 0))
+        if c == 0:
+            transitions.append((SOUTH, r, M - 1))
 
-    while True:
-        if can_move(x, y, 0):          # 남
-            x += 1
-
-        elif can_move(x, y, 1):        # 서회전 + 하강
-            x += 1
-            y -= 1
-            exit_d = (exit_d + 3) % 4
-
-        elif can_move(x, y, 2):        # 동회전 + 하강
-            x += 1
-            y += 1
-            exit_d = (exit_d + 1) % 4
-
-        else:
-            break
-
-    # 숲 밖에 걸친 경우
-    if x < 4:
-        grid = [[0] * C for _ in range(R + 3)]
-        return -1, -1, -1
-
-    return x, y, exit_d
+    nxt.extend(transitions)
+    return nxt
 
 
-def place_golem(x, y, idx):
-    grid[x][y] = idx
-    grid[x - 1][y] = idx
-    grid[x + 1][y] = idx
-    grid[x][y - 1] = idx
-    grid[x][y + 1] = idx
+def build_anomaly_blocks():
+    anomaly_blocks = [[float('inf')] * N for _ in range(N)]
+
+    anomaly_dr = [0, 0, 1, -1]  # 동 서 남 북
+    anomaly_dc = [1, -1, 0, 0]
+
+    for r, c, d, v in strange:
+        if grid[r][c] != 4:
+            anomaly_blocks[r][c] = min(anomaly_blocks[r][c], 0)
+
+        time_step = v
+        nr, nc = r, c
+
+        while True:
+            nr += anomaly_dr[d]
+            nc += anomaly_dc[d]
+
+            if not (0 <= nr < N and 0 <= nc < N):
+                break
+            if grid[nr][nc] in [1, 4]:
+                break
+
+            anomaly_blocks[nr][nc] = min(anomaly_blocks[nr][nc], time_step)
+            time_step += v
+
+    return anomaly_blocks
 
 
-def escape(x, y, idx):
-    global visited
+def bfs_grid(start_time, start_x, start_y):
+    q = deque([(start_time, start_x, start_y)])
+    visited_grid = [[float('inf')] * N for _ in range(N)]
+    visited_grid[start_x][start_y] = start_time
 
-    max_r = x
+    while q:
+        time, x, y = q.popleft()
 
-    for dx, dy in exit_dir:
-        nx, ny = x + dx, y + dy
+        if grid[x][y] == 4:
+            return time
 
-        if not (3 <= nx < R + 3 and 0 <= ny < C):
-            continue
-        if visited[nx][ny]:
-            continue
+        for dx, dy in dirs:
+            nx, ny = x + dx, y + dy
+            nt = time + 1
 
-        nidx = grid[nx][ny]
+            if not (0 <= nx < N and 0 <= ny < N):
+                continue
+            if grid[nx][ny] in [1, 3]:
+                continue
+            if nt >= anomaly_blocks[nx][ny]:
+                continue
+            if nt >= visited_grid[nx][ny]:
+                continue
 
-        # 같은 골렘 내부 이동
-        if nidx == idx:
-            visited[nx][ny] = True
-            max_r = max(max_r, escape(nx, ny, idx))
-            visited[nx][ny] = False
+            visited_grid[nx][ny] = nt
+            q.append((nt, nx, ny))
 
-        # 현재 칸이 출구라면 다른 골렘으로 이동 가능
-        elif golem[idx] == (x, y) and nidx != 0:
-            visited[nx][ny] = True
-            max_r = max(max_r, escape(nx, ny, nidx))
-            visited[nx][ny] = False
-
-    return max_r
+    return -1
 
 
 if __name__ == "__main__":
-    R, C, K = map(int, input().split())
+    N, M, F = map(int, input().split())
+    grid = [list(map(int, input().split())) for _ in range(N)]
 
-    grid = [[0] * C for _ in range(R + 3)]
-    golem = {i: (0, 0) for i in range(1, K + 1)}
-    answer = 0
+    cube = []
+    for _ in range(5):
+        face = [list(map(int, input().split())) for _ in range(M)]
+        cube.append(face)
 
-    for idx in range(1, K + 1):
-        c, d = map(int, input().split())
+    strange = [tuple(map(int, input().split())) for _ in range(F)]
 
-        golem_x, golem_y, golem_d = move_golem(c - 1, d)
+    dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
-        # 숲 밖 걸침 -> 초기화 후 이번 골렘은 배치하지 않음
-        if golem_x == -1:
-            golem = {i: (0, 0) for i in range(1, K + 1)}
-            continue
+    # 시작점 찾기
+    sx = sy = -1
+    for i in range(M):
+        for j in range(M):
+            if cube[TOP][i][j] == 2:
+                sx, sy = i, j
+                cube[TOP][i][j] = 0
+                break
+        if sx != -1:
+            break
 
-        # 출구 좌표 저장
-        ex, ey = exit_dir[golem_d]
-        golem[idx] = (golem_x + ex, golem_y + ey)
+    # 시간의 벽 좌상단 찾기
+    cube_sx = cube_sy = -1
+    for i in range(N):
+        if 3 in grid[i]:
+            cube_sx = i
+            cube_sy = grid[i].index(3)
+            break
 
-        # 골렘 배치
-        place_golem(golem_x, golem_y, idx)
+    # 큐브 출구 찾기
+    org_ex = org_ey = -1
+    out_x = out_y = -1
+    ed = -1
 
-        # 정령 이동
-        visited = [[False] * C for _ in range(R + 3)]
-        visited[golem_x][golem_y] = True
+    # 북
+    if cube_sx > 0:
+        for c_off in range(M):
+            if grid[cube_sx - 1][cube_sy + c_off] == 0:
+                out_x, out_y = cube_sx - 1, cube_sy + c_off
+                org_ex, org_ey = cube_sx, cube_sy + c_off
+                ed = 3
+                break
 
-        res = escape(golem_x, golem_y, idx) - 2
-        answer += res
+    # 남
+    if ed == -1 and cube_sx + M < N:
+        for c_off in range(M):
+            if grid[cube_sx + M][cube_sy + c_off] == 0:
+                out_x, out_y = cube_sx + M, cube_sy + c_off
+                org_ex, org_ey = cube_sx + M - 1, cube_sy + c_off
+                ed = 2
+                break
 
+    # 서
+    if ed == -1 and cube_sy > 0:
+        for r_off in range(M):
+            if grid[cube_sx + r_off][cube_sy - 1] == 0:
+                out_x, out_y = cube_sx + r_off, cube_sy - 1
+                org_ex, org_ey = cube_sx + r_off, cube_sy
+                ed = 1
+                break
+
+    # 동
+    if ed == -1 and cube_sy + M < N:
+        for r_off in range(M):
+            if grid[cube_sx + r_off][cube_sy + M] == 0:
+                out_x, out_y = cube_sx + r_off, cube_sy + M
+                org_ex, org_ey = cube_sx + r_off, cube_sy + M - 1
+                ed = 0
+                break
+
+    if ed == -1:
+        print(-1)
+        sys.exit()
+
+    goal_face, goal_r, goal_c = convert_exit(org_ex, org_ey, ed, cube_sx, cube_sy, M)
+
+    # 1) 큐브 BFS
+    visited_cube = [[[False] * M for _ in range(M)] for _ in range(5)]
+    q = deque([(0, TOP, sx, sy)])
+    visited_cube[TOP][sx][sy] = True
+
+    time_to_exit_wall = -1
+    while q:
+        time, face, r, c = q.popleft()
+
+        if (face, r, c) == (goal_face, goal_r, goal_c):
+            time_to_exit_wall = time + 1
+            break
+
+        for nf, nr, nc in move(face, r, c):
+            if not (0 <= nr < M and 0 <= nc < M):
+                continue
+            if visited_cube[nf][nr][nc]:
+                continue
+            if cube[nf][nr][nc] == 1:
+                continue
+
+            visited_cube[nf][nr][nc] = True
+            q.append((time + 1, nf, nr, nc))
+
+    if time_to_exit_wall == -1:
+        print(-1)
+        sys.exit()
+
+    # 2) 이상현상 전처리
+    anomaly_blocks = build_anomaly_blocks()
+
+    # 시작 바깥칸 자체가 이미 막혀 있으면 불가
+    if time_to_exit_wall >= anomaly_blocks[out_x][out_y]:
+        print(-1)
+        sys.exit()
+
+    # 3) 평면 BFS
+    answer = bfs_grid(time_to_exit_wall, out_x, out_y)
     print(answer)

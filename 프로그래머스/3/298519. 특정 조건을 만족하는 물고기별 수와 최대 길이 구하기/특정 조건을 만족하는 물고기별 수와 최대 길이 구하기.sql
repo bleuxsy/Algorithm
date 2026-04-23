@@ -1,5 +1,15 @@
-SELECT COUNT(*) AS FISH_COUNT, MAX(IFNULL(LENGTH, 10)) AS MAX_LENGTH, FISH_TYPE
-FROM FISH_INFO
-GROUP BY FISH_TYPE
-HAVING AVG(IFNULL(LENGTH, 10)) >= 33
-ORDER BY FISH_TYPE
+-- 코드를 작성해주세요
+# select *
+# from fish_info
+# where fish_type in (
+    
+
+
+
+
+# )
+select  count(*) as fish_count, max( ifnull(length, 10)) as max_length, fish_type
+    from fish_info
+    group by fish_type
+    having avg(ifnull(length, 10)) >= 33
+order by fish_type

@@ -1,11 +1,13 @@
 SELECT 
-    b.WRITER_ID AS USER_ID,
-    u.NICKNAME,
-    SUM(b.PRICE) AS TOTAL_SALES
-FROM USED_GOODS_BOARD b
-JOIN USED_GOODS_USER u
-    ON b.WRITER_ID = u.USER_ID
-WHERE b.STATUS = 'DONE'
-GROUP BY b.WRITER_ID, u.NICKNAME
-HAVING SUM(b.PRICE) >= 700000
-ORDER BY TOTAL_SALES ASC;
+    u.user_id, 
+    u.nickname, 
+    SUM(b.price) AS total_sales
+FROM used_goods_board b
+JOIN used_goods_user u
+    ON b.writer_id = u.user_id
+#그룹 묶기 전에 행을 거름
+where b.status = 'DONE'
+GROUP BY u.user_id, u.nickname
+# 그룹 묶은 후에 결과를 거름
+HAVING total_sales >= 700000
+ORDER BY total_sales;

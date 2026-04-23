@@ -1,15 +1,8 @@
-SELECT 
-    A.APNT_NO, 
-    P.PT_NAME, 
-    A.PT_NO, 
-    A.MCDP_CD, 
-    D.DR_NAME, 
-    A.APNT_YMD
-FROM APPOINTMENT AS A
-JOIN PATIENT AS P 
-    ON P.PT_NO = A.PT_NO
-JOIN DOCTOR AS D 
-    ON D.DR_ID = A.MDDR_ID
-WHERE A.APNT_CNCL_YMD IS NULL 
-  AND A.MCDP_CD = 'CS' AND DATE_FORMAT(A.APNT_YMD, '%Y-%m-%d') = '2022-04-13'
-ORDER BY A.APNT_YMD;
+-- 코드를 입력하세요
+SELECT a.apnt_no, p.pt_name, a.pt_no, a.mcdp_cd , d.dr_name, a.apnt_ymd
+
+from appointment a
+ left join doctor d on a.mddr_id = d.dr_id
+ left join patient p on a.pt_no = p.pt_no
+where a.apnt_cncl_yn = 'N' and date_format(a.apnt_ymd, '%Y-%m-%d') = '2022-04-13'
+order by a.apnt_ymd

@@ -1,16 +1,24 @@
-SELECT E.EMP_NO, E.EMP_NAME, 
-(CASE
-    WHEN AVG(SCORE) >= 96 THEN 'S'
-    WHEN AVG(SCORE) >= 90 THEN 'A'
-    WHEN AVG(SCORE) >= 80 THEN 'B'
-    ELSE 'C' END) AS GRADE, 
-(CASE
-    WHEN AVG(SCORE) >= 96 THEN E.SAL*0.2
-    WHEN AVG(SCORE) >= 90 THEN E.SAL*0.15
-    WHEN AVG(SCORE) >= 80 THEN E.SAL*0.1
-    ELSE 0 END) AS BONUS
-    
-FROM HR_EMPLOYEES E
-    INNER JOIN HR_GRADE G ON E.EMP_NO = G.EMP_NO
-GROUP BY E.EMP_NO
-ORDER BY 1;
+-- 코드를 작성해주세요
+# select emp_no, emp_name, grade , bonus
+select e.emp_no, e.emp_name, g.grade , 
+    case 
+        when g.grade = 'S' then e.sal * 0.2
+        when g.grade = 'A' then e.sal * 0.15
+        when g.grade = 'B' then e.sal * 0.1
+        else 0
+    end as bonus
+        
+from hr_employees e
+join (
+        select emp_no , 
+            case 
+                WHEN AVG(SCORE) >= 96 THEN 'S'
+                WHEN AVG(SCORE) >= 90 THEN 'A'
+                WHEN AVG(SCORE) >= 80 THEN 'B'
+                else 'C'
+            end as grade
+        from hr_grade
+        group by emp_no
+
+) g on e.emp_no = g.emp_no
+order by emp_no

@@ -1,5 +1,5 @@
--- 코드를 입력하세요
-SELECT P.ID, P.NAME, P.HOST_ID 
-FROM PLACES AS P, (SELECT HOST_ID FROM PLACES GROUP BY HOST_ID HAVING COUNT(*) >= 2) AS I
-WHERE P.HOST_ID = I.HOST_ID
-ORDER BY P.ID
+# -- 코드를 입력하세요
+SELECT id, name , host_id 
+from places
+where host_id in ( select host_id from places group by host_id having count(*) >= 2)
+order by id

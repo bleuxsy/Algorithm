@@ -1,9 +1,15 @@
 -- 코드를 입력하세요
-SELECT H.FLAVOR
-FROM FIRST_HALF AS H
-INNER JOIN (SELECT FLAVOR , SUM(TOTAL_ORDER) AS TOTAL
-FROM JULY GROUP BY FLAVOR) AS T
-ON T.FLAVOR = H.FLAVOR
-ORDER BY (H.TOTAL_ORDER +  T.TOTAL) DESC LIMIT 3
-
-
+SELECT flavor
+from (
+    select flavor, total_order
+    from first_half
+    
+    union all
+    
+    select flavor, total_order
+    from july
+    
+) T
+group by flavor
+order by sum(total_order) desc
+limit 3
